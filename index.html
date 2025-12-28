@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>هدیه یلدای شما</title>
+
+  <style>
+    @font-face {
+      font-family: 'Kalameh';
+      src: url('assets/font/Kalameh-Black.ttf') format('truetype');
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'IranNastaliq';
+      src: url('assets/font/IranNastaliq.ttf') format('truetype');
+      font-display: swap;
+    }
+
+    :root {
+      --color-primary: #e53935;
+      --color-text: #f7f7f7;
+      --color-muted: #cfd8dc;
+      --card-bg: rgba(0,0,0,0.6);
+      --radius: 20px;
+      --shadow-card: 0 10px 26px rgba(0,0,0,0.32);
+      --text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      --track-bg: rgba(255,255,255,0.16);
+      --track-fill: #e53935;
+      --ease: 0.6s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) { :root { --ease: 0s; } }
+
+    body {
+      margin: 0;
+      font-family: 'Kalameh', system-ui, -apple-system, Segoe UI, Roboto, 'Vazirmatn', sans-serif;
+      color: var(--color-text);
+      background: url('assets/img/background.png') center center / cover no-repeat fixed;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .hero {
+      text-align: center;
+      font-size: clamp(2.6rem, 9vw, 5rem);
+      font-weight: 900;
+      color: var(--color-primary);
+      margin: 26px 0 8px;
+      text-shadow: -6px 6px 4px rgba(0, 0, 0, 0.75);
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 16px 32px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 22px;
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      box-shadow: var(--shadow-card);
+      margin-bottom: 32px;
+    }
+
+    /* Fortune */
+    .fortune { text-align: center; overflow: hidden; max-height: 120px; transition: max-height var(--ease), padding 0.3s ease; }
+    .fortune.expanded { max-height: 650px; }
+    .fortune h2 { margin: 0 0 8px; font-size: 1.25rem; text-shadow: var(--text-shadow); }
+    .fortune p.helper { margin: 0 0 12px; color: var(--color-muted); font-size: .95rem; text-shadow: var(--text-shadow); }
+
+    .btn-nit,
+    .btn {
+      border: none; cursor: pointer; padding: 10px 16px; border-radius: 14px; color: #fff; font-weight: 800; letter-spacing: 0.3px;
+      background: linear-gradient(135deg, rgba(229,57,53,0.6), rgba(67,160,71,0.6));
+      box-shadow: 0 8px 22px rgba(0,0,0,0.35), 0 0 14px rgba(229,57,53,0.28), 0 0 16px rgba(67,160,71,0.24);
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .btn-nit:hover, .btn:hover { transform: translateY(-2px); }
+    .btn-nit:focus-visible, .btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+    /* Poem layout */
+    .poem {
+      font-family: 'IranNastaliq', serif; font-size: clamp(2rem, 6vw, 3.2rem); line-height: 2.1; margin: 14px 0 10px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4); opacity: 0; transition: opacity var(--ease); display: flex; flex-direction: column; align-items: center;
+    }
+    .misra { margin: 2px 0; width: 100%; }
+    .misra-top, .misra-bottom { text-align: center; }
+    @media (max-width: 768px) { .misra-top { text-align: right; margin-right: 8%; } .misra-bottom { text-align: left; margin-left: 8%; } }
+
+    .meaning {
+      font-size: 1.05rem; color: var(--color-muted); text-align: center; border-top: 1px dashed rgba(255,255,255,0.26);
+      padding-top: 10px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); opacity: 0; transition: opacity var(--ease);
+    }
+    .fortune.expanded .poem, .fortune.expanded .meaning { opacity: 1; }
+
+    /* Players */
+    .message h2, .music h2 { margin: 0 0 12px; text-align: center; font-size: 1.2rem; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .message p, .music p { text-align: center; color: var(--color-muted); margin: 4px 0 16px; text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+
+    .player {
+      display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; gap: 10px 12px; align-items: center;
+    }
+    .timeline {
+      grid-column: 2 / 3; grid-row: 1 / 2; position: relative; height: 8px; border-radius: 999px; background: var(--track-bg);
+      overflow: hidden; cursor: pointer;
+    }
+    .progress {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--track-fill); box-shadow: 0 0 12px rgba(229,57,53,0.75);
+      will-change: width;
+    }
+    .time { grid-column: 1 / 2; grid-row: 2 / 3; font-size: .95rem; color: var(--color-muted); text-shadow: 0 2px 6px rgba(0,0,0,0.4); justify-self: start; }
+    .duration { grid-column: 3 / 4; grid-row: 2 / 3; font-size: .95rem; color: var(--color-muted); text-shadow: 0 2px 6px rgba(0,0,0,0.4); justify-self: end; }
+
+    /* Footer layout: right contact, left credits (desktop); centered on mobile */
+    footer {
+      background: rgba(0,0,0,0.5);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: nowrap;
+      font-size: .9rem;
+      color: var(--color-muted);
+      margin-top: auto;
+      gap: 12px;
+    }
+    .footer-right, .footer-left { flex: 1; }
+    .footer-right { text-align: right; }
+    .footer-left  { text-align: left; }
+    footer span, footer a { text-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+
+    .contact { font-weight: 700; color: var(--color-text); line-height: 1.6; font-size: 1rem; }
+    .contact a { color: var(--color-text); text-decoration: none; font-weight: 800; white-space: nowrap; }
+
+    .small-text { font-size: 0.8rem; color: var(--color-muted); display: block; margin-bottom: 2px; }
+    .web-order { font-size: 0.85rem; color: var(--color-text); font-weight: 600; margin-bottom: 2px; }
+
+    @media (max-width: 768px) {
+      footer { flex-wrap: wrap; align-items: center; text-align: center; }
+      .footer-right, .footer-left { flex: 1 1 100%; text-align: center; }
+    }
+
+    .yalda-text p {
+    margin: 0 0 16px;    /* فاصله بین پاراگراف‌ها */
+    line-height: 1.95;   /* خوانایی بهتر */
+    color: var(--color-text);
+    text-shadow: var(--text-shadow);
+  }
+  .yalda-text p:last-child { margin-bottom: 0; }
+
+  </style>
+</head>
+<body>
+  <div class="hero">یلدا مبارک</div>
+
+  <div class="wrap">
+    <!-- پیام شما -->
+    <section class="card message" aria-labelledby="msgTitle">
+      <h2 id="msgTitle">پیام تبریک یلدا</h2>
+      <p>شما میتوانید پیام خود را در سورس گذاشته و در اینجا بشنوید</p>
+
+      <div class="player">
+        <button id="toggleMessageBtn" class="btn" aria-label="پخش یا توقف پیام">▶️ پخش پیام</button>
+
+        <div class="timeline" id="timeline" role="slider" aria-label="پیشروی پیام" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="time" id="currentTime">00:00</div>
+        <div class="duration" id="totalTime">—:—</div>
+      </div>
+    </section>
+
+    <!-- موزیک یلدایی دل یار -->
+    <section class="card music" aria-labelledby="musicTitle">
+      <h2 id="musicTitle">موزیک یلدایی دل یار</h2>
+      <p>برای پخش موزیک بر روی دکمه کلیک کنید</p>
+
+      <div class="player">
+        <button id="toggleMusicBtn" class="btn" aria-label="پخش یا توقف موزیک">▶️ پخش موزیک</button>
+
+        <div class="timeline" id="musicTimeline" role="slider" aria-label="پیشروی موزیک" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="progress" id="musicProgress"></div>
+        </div>
+
+        <div class="time" id="musicCurrentTime">00:00</div>
+        <div class="duration" id="musicTotalTime">—:—</div>
+      </div>
+    </section>
+
+    <!-- فال حافظ -->
+    <section class="card fortune" id="fortuneCard" aria-labelledby="hafezTitle">
+      <h2 id="hafezTitle">فال حافظ</h2>
+      <p class="helper">با نیت فال خود را باز کنید</p>
+      <button id="nitBtn" class="btn-nit" aria-controls="poem meaning">✨ نیت کنید ✨</button>
+
+      <div id="poem" class="poem" aria-live="polite"></div>
+      <p id="meaning" class="meaning" aria-live="polite">—</p>
+    </section>
+
+    <!-- متن توضیح یلدا -->
+    <section class="card yalda-text" aria-label="درباره یلدا" dir="rtl">
+  <p>
+    شب یلدا کهن‌ترین جشنِ مانده از ایران باستان است؛ شبی که در آن طولانی‌ترین تاریکی سال رقم می‌خورد و از فردای آن، روزها دوباره رو به روشنایی می‌روند. در باورهای ایرانی، این شب نماد نبرد نور و تاریکی است؛ لحظه‌ای که سیاهی به اوج می‌رسد اما بلافاصله شکست می‌خورد و خورشیدِ نو زاده می‌شود. ریشه‌های یلدا به سنت‌های آریایی و آیین‌های زرتشتی بازمی‌گردد؛ جایی که مردم برای پاسداشت میترا، ایزدِ روشنایی و پیمان، گرد هم می‌آمدند و بیدار ماندن را نشانه‌ای از همراهی با نور می‌دانستند.
+  </p>
+
+  <p>
+    در طول تاریخ، یلدا به جشنِ امید، پایداری و همبستگی تبدیل شد. خانواده‌ها در این شب دور هم جمع می‌شوند، قصه‌های کهن می‌شنوند، دیوان حافظ می‌گشایند و با خوردن میوه‌های سرخ‌فام مانند انار و هندوانه، گرمی و زندگی را به خانه دعوت می‌کنند. این آیین‌ها تنها رسوم ساده نیستند؛ بلکه بازتابی از فلسفه‌ای عمیق‌اند: اینکه حتی طولانی‌ترین تاریکی‌ها نیز گذرا هستند و روشنایی همیشه بازمی‌گردد.
+  </p>
+
+  <p>
+    امروز یلدا نه‌فقط در ایران، بلکه در میان جوامع ایرانی‌تبار در سراسر جهان جشن گرفته می‌شود و به‌عنوان میراث ناملموس یونسکو نیز ثبت شده است. این شب، پلی است میان اسطوره و زندگی روزمره؛ یادآور اینکه انسان با گردهمایی، روایت و مهر می‌تواند تاریکی را کوتاه‌تر کند و روشنایی را بلندتر.
+  </p>
+
+  <p><strong>یلداتون مبارک</strong></p>
+</section>
+
+  </div>
+
+  <!-- فوتر: راست سفارش پک، چپ طراحی و کپی‌رایت -->
+  <footer>
+    <div class="footer-right">
+      <span class="contact">
+        جهت تهیه محصولات و پک‌ها با شماره زیر تماس بگیرید<br>
+        <a href="tel:09127242013">📞 0912&nbsp;724&nbsp;2013</a>
+      </span>
+    </div>
+    <div class="footer-left">
+      <span class="small-text">Designed by Aryan Alavi</span>
+      <span class="web-order">سفارش صفحات وب: <a href="tel:09106661905">09106661905</a></span>
+      <span class="small-text">Copyright © 1404</span>
+    </div>
+  </footer>
+
+  <!-- Audio elements -->
+  <audio id="messageAudio" preload="auto" playsinline src="assets/audio/message.mp3"></audio>
+  <audio id="introAudio" preload="auto" playsinline src="assets/audio/intro.mp3" loop></audio>
+
+  <script>
+    const THEME = { hafezJsonUrl: 'assets/data/hafez.json', BG_VOLUME: 0.35 };
+
+    // Elements
+    const introAudio       = document.getElementById('introAudio');
+    const messageAudio     = document.getElementById('messageAudio');
+    const toggleMessageBtn = document.getElementById('toggleMessageBtn');
+    const toggleMusicBtn   = document.getElementById('toggleMusicBtn');
+
+    const timeline       = document.getElementById('timeline');
+    const progress       = document.getElementById('progress');
+    const currentTimeEl  = document.getElementById('currentTime');
+    const totalTimeEl    = document.getElementById('totalTime');
+
+    const musicTimeline    = document.getElementById('musicTimeline');
+    const musicProgress    = document.getElementById('musicProgress');
+    const musicCurrentTime = document.getElementById('musicCurrentTime');
+    const musicTotalTime   = document.getElementById('musicTotalTime');
+
+    const fortuneCard = document.getElementById('fortuneCard');
+    const nitBtn      = document.getElementById('nitBtn');
+    const poemEl      = document.getElementById('poem');
+    const meaningEl   = document.getElementById('meaning');
+
+    let hafezCache = null;
+
+    // Time formatting
+    function formatTime(sec) {
+      if (!isFinite(sec)) return '—:—';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    /* ---------------- Message player UI ---------------- */
+    let rafId = null;
+    function updateMessageUI() {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        const cur = messageAudio.currentTime || 0;
+        const dur = messageAudio.duration || 0;
+        currentTimeEl.textContent = formatTime(cur);
+        totalTimeEl.textContent = formatTime(dur);
+        const pct = dur ? (cur / dur) * 100 : 0;
+        progress.style.width = `${pct}%`;
+        timeline.setAttribute('aria-valuenow', Math.round(pct));
+        rafId = null;
+      });
+    }
+
+    function seekMessageFromClientX(clientX) {
+      const rect = timeline.getBoundingClientRect();
+      const x = (clientX - rect.left) / rect.width;
+      const dur = messageAudio.duration || 0;
+      if (dur) messageAudio.currentTime = Math.min(Math.max(x, 0), 1) * dur;
+    }
+
+    timeline.addEventListener('click', (e) => seekMessageFromClientX(e.clientX));
+    timeline.addEventListener('keydown', (e) => {
+      const dur = messageAudio.duration || 0;
+      if (!dur) return;
+      const step = dur / 20; // 5%
+      if (e.key === 'ArrowRight') messageAudio.currentTime = Math.min(messageAudio.currentTime + step, dur);
+      if (e.key === 'ArrowLeft')  messageAudio.currentTime = Math.max(messageAudio.currentTime - step, 0);
+    });
+
+    messageAudio.addEventListener('loadedmetadata', updateMessageUI);
+    messageAudio.addEventListener('timeupdate', updateMessageUI);
+    messageAudio.addEventListener('ended', () => {
+      toggleMessageBtn.textContent = '▶️ پخش پیام';
+    });
+
+    /* ---------------- Music player UI ---------------- */
+    function updateMusicUI() {
+      const cur = introAudio.currentTime || 0;
+      const dur = introAudio.duration || 0;
+      musicCurrentTime.textContent = formatTime(cur);
+      musicTotalTime.textContent = formatTime(dur);
+      const pct = dur ? (cur / dur) * 100 : 0;
+      musicProgress.style.width = `${pct}%`;
+      musicTimeline.setAttribute('aria-valuenow', Math.round(pct));
+    }
+    introAudio.addEventListener('loadedmetadata', updateMusicUI);
+    introAudio.addEventListener('timeupdate', updateMusicUI);
+
+    function seekMusicFromClientX(clientX) {
+      const rect = musicTimeline.getBoundingClientRect();
+      const x = (clientX - rect.left) / rect.width;
+      const dur = introAudio.duration || 0;
+      if (dur) introAudio.currentTime = Math.min(Math.max(x, 0), 1) * dur;
+    }
+    musicTimeline.addEventListener('click', (e) => seekMusicFromClientX(e.clientX));
+    musicTimeline.addEventListener('keydown', (e) => {
+      const dur = introAudio.duration || 0;
+      if (!dur) return;
+      const step = dur / 20; // 5%
+      if (e.key === 'ArrowRight') introAudio.currentTime = Math.min(introAudio.currentTime + step, dur);
+      if (e.key === 'ArrowLeft')  introAudio.currentTime = Math.max(introAudio.currentTime - step, 0);
+    });
+
+    /* ---------------- Mutual exclusivity logic ---------------- */
+    async function playMessage() {
+      if (!introAudio.paused) {
+        pauseMusic();
+      }
+      try {
+        await messageAudio.play();
+        toggleMessageBtn.textContent = '⏸️ توقف پیام';
+      } catch {}
+    }
+    function pauseMessage() {
+      messageAudio.pause();
+      toggleMessageBtn.textContent = '▶️ پخش پیام';
+    }
+
+    async function playMusic() {
+      if (!messageAudio.paused) {
+        pauseMessage();
+      }
+      introAudio.volume = THEME.BG_VOLUME;
+      try {
+        await introAudio.play();
+        toggleMusicBtn.textContent = '⏸️ توقف موزیک';
+      } catch {}
+    }
+    function pauseMusic() {
+      introAudio.pause();
+      toggleMusicBtn.textContent = '▶️ پخش موزیک';
+    }
+
+    // Buttons
+    toggleMessageBtn.addEventListener('click', () => {
+      if (messageAudio.paused) playMessage();
+      else pauseMessage();
+    });
+
+    toggleMusicBtn.addEventListener('click', () => {
+      if (introAudio.paused) playMusic();
+      else pauseMusic();
+    });
+
+    /* ---------------- Fortune: auto-play music on open ---------------- */
+    async function loadHafez() {
+      if (hafezCache) return hafezCache;
+      const res = await fetch(THEME.hafezJsonUrl, { cache: 'no-store' });
+      const data = await res.json();
+      hafezCache = Array.isArray(data) ? data : [];
+      return hafezCache;
+    }
+
+    function splitVerse(verse) {
+      if (!verse || typeof verse !== 'string') return ['—', ''];
+      const normalized = verse.replace(/\s+/g, ' ').trim();
+      const separators = [' — ', '—', ' • ', ' | '];
+      for (const sep of separators) {
+        if (normalized.includes(sep)) {
+          const parts = normalized.split(sep);
+          if (parts.length >= 2) return [parts[0].trim(), parts[1].trim()];
+        }
+      }
+      const spaceParts = verse.split(/\s{2,}/);
+      if (spaceParts.length >= 2) return [spaceParts[0].trim(), spaceParts[1].trim()];
+      const mid = Math.floor(normalized.length / 2);
+      let splitIdx = normalized.lastIndexOf(' ', mid);
+      if (splitIdx < 0 || splitIdx > normalized.length - 5) splitIdx = normalized.indexOf(' ', mid);
+      if (splitIdx > 0) {
+        return [normalized.slice(0, splitIdx).trim(), normalized.slice(splitIdx + 1).trim()];
+      }
+      return [normalized, ''];
+    }
+
+    async function drawFortuneFromJSON() {
+      try {
+        const data = await loadHafez();
+        if (!Array.isArray(data) || data.length === 0) {
+          poemEl.innerHTML = '';
+          meaningEl.textContent = 'داده‌ای یافت نشد.';
+          return;
+        }
+        const pick = data[Math.floor(Math.random() * data.length)];
+        const [top, bottom] = splitVerse(pick.verse || '');
+        poemEl.innerHTML = `
+          <div class="misra misra-top">${top || '—'}</div>
+          <div class="misra misra-bottom">${bottom || ''}</div>
+        `;
+        meaningEl.textContent = pick.meaning || '';
+      } catch {
+        poemEl.innerHTML = '';
+        meaningEl.textContent = 'خطا در بارگذاری فال.';
+      }
+    }
+
+    nitBtn.addEventListener('click', async () => {
+      fortuneCard.classList.add('expanded');
+      await drawFortuneFromJSON();
+      const helper = fortuneCard.querySelector('.helper');
+      if (helper) helper.remove();
+      nitBtn.remove();
+
+      // Auto-play music when fortune opens, and stop message if playing
+      if (!introAudio.paused) {
+        // if already playing music, keep it; else start
+        toggleMusicBtn.textContent = '⏸️ توقف موزیک';
+      } else {
+        playMusic();
+      }
+    }, { once: true });
+
+    // Prevent context menu on audio/buttons
+    document.addEventListener('contextmenu', (e) => {
+      const tag = (e.target.tagName || '').toLowerCase();
+      if (['audio', 'button'].includes(tag)) e.preventDefault();
+    });
+  </script>
+</body>
+</html>
